@@ -195,8 +195,12 @@ wsServer.on('request', function(request) {
 					playCount = 0;
 					break;
 				}
-				case 'edit' : {
+				case 'clear' : {
 					while (urlarray.pop()) {}
+					break;
+				}
+				case 'edit' : {
+					
 					//urlarray.splice(0, 1);
 					urlarray.push(strArray[2]);
 					break;
