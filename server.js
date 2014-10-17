@@ -4,6 +4,7 @@ var queue = [];
 var gamestate;
 var fightready=0;
 var urlarray = [];
+
 var WebSocketServer = require('websocket').server;
 var http = require('http');
 var receiver=null;
@@ -72,6 +73,8 @@ wsServer.on('request', function(request) {
     console.log((new Date()) + ' Connection accepted.');
     connection.on('message', function(message) {
         if (message.type === 'utf8') {
+		
+		
 			var strArray=message.utf8Data.split('@');
 			console.log(message.utf8Data);
 			
@@ -97,22 +100,33 @@ wsServer.on('request', function(request) {
 					console.log('Receiver Connection Success !!');
 					console.log('Receiver url : ' + receiver.remoteAddress);	
 					if(urlarray.length > 0 ) {
-						receiver.sendUTF(urlarray[--playCount]);
-						playCount+=2;
+						playCount=0;
+						receiver.sendUTF(urlarray[playCount++]);
+						//playCount+=2;
 					}
 				}
 			
 				else if(strArray[1] === 'end'){
-					if ( playCount === urlarray.length){
+					if(strArray[2] !==null) {
+						urlarray[playCount-1]=strArray[2];
+					}
+					if ( playCount >= urlarray.length){
 					console.log('!!! - Player Counter initialized - !!!');
 					playCount = 0;
 					}
 					
+				
+
+					
+					
 					if(urlarray.length) {
+						
 						receiver.send(urlarray[playCount++]);
 					}
 					console.log('==========Next Video Loaded==========');
 					console.log('Receiver is now playing next Queued URL'+playCount);
+					
+					
 				
 			
 				}
@@ -136,9 +150,9 @@ wsServer.on('request', function(request) {
 				}
 				case 'url' :{
 					console.log('url and queued');
-					strArray[2] = checkURL(strArray[2]);
-					console.log(' !!! type check : ' + strArray[2] );
+					
 					if(urlarray.length === 0 && receiver !== null) {
+						
 						urlarray.push(strArray[2]);
 						receiver.send(strArray[2]);
 						playCount++;
@@ -151,7 +165,7 @@ wsServer.on('request', function(request) {
 				}
 				case 'quick' :{
 					console.log('Quick msg received');
-					strArray[2] = checkURL(strArray[2]);
+				
 					if(playCount === urlarray.length ){
 					
 						urlarray.push(strArray[2]);
@@ -197,12 +211,22 @@ wsServer.on('request', function(request) {
 				}
 				case 'clear' : {
 					while (urlarray.pop()) {}
+					
 					break;
 				}
 				case 'edit' : {
 					
 					//urlarray.splice(0, 1);
 					urlarray.push(strArray[2]);
+					
+					break;
+				}
+				case 'scrolldown' : {
+					receiver.send('scrolldown');
+					break;
+				}
+				case 'scrollup' : {
+					receiver.send('scrollup');
 					break;
 				}
 				default : {
@@ -358,25 +382,3 @@ wsServer.on('request', function(request) {
     });
 });
 
-function checkURL(urlString){
-
-	var uString;
-
-	var youtube = urlString.indexOf('youtube');
-	var mp = urlString.indexOf('mp4');
-	console.log( '==Check URL function==');
-	console.log( ' index of youtube : ' + youtube );
-	console.log( ' index of mp4     : ' + mp );
-	
-	if( youtube=== -1 && mp === -1 ){
-		uString = urlString + '#url'
-		console.log( ' url : ' + uString );
-		return uString;
-	}
-	else{
-		uString = urlString + '#video'
-		console.log( 'here?' );
-		console.log( ' url : ' + uString );
-		return uString;
-	}
-}
