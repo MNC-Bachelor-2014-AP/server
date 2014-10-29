@@ -107,8 +107,16 @@ wsServer.on('request', function(request) {
 				}
 			
 				else if(strArray[1] === 'end'){
+					var temp2=strArray[2].split('#');
 					if(strArray[2] !==null) {
-						urlarray[playCount-1]=strArray[2];
+						for(var i=0;i<urlarray.length;i++) {
+							var temp1=urlarray[i].split('#');
+							
+							if(temp1[0]===temp2[0]) {
+								urlarray[i]=temp1[0]+'#'+temp1[1]+'#'+temp2[2];
+							}
+						}
+						
 					}
 					if ( playCount >= urlarray.length){
 					console.log('!!! - Player Counter initialized - !!!');
@@ -240,6 +248,8 @@ wsServer.on('request', function(request) {
 			else if(strArray[0] === 'player') {
 				switch(strArray[1]) {
 					case 'connect' : case 'reconnect' :{ 
+					
+						if(receiver !== null) {
 						receiver.sendUTF('tetris');
 						console.log('player connect');
 						queue.unshift(connection);
@@ -265,6 +275,8 @@ wsServer.on('request', function(request) {
 							connection.sendUTF('wait@'+waitNumber);
 						}
 						break;
+						}
+						else { break;}
 					
 					}
 					case 'start' : {
